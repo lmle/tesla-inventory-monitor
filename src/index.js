@@ -52,7 +52,6 @@ const monitorTeslaInventory = async () => {
       .from(results)
       .filter((r) => !vins.includes(r.VIN));
 
-
     if (!latestResults.length) {
       console.log('no new results'); // eslint-disable-line no-console
       return;
