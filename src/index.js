@@ -1,7 +1,9 @@
 const express = require('express');
 const sgMail = require('@sendgrid/mail');
 const axios = require('axios');
+const modelMap = require('./constants/modelMap');
 const getCurrentISO = require('./utils/getCurrentISO');
+const getSendgridEmails = require('./utils/getSendgridEmails');
 
 const app = express();
 const vins = [];
@@ -17,6 +19,8 @@ app.listen(process.env.PORT, () => {
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const monitorTeslaInventory = async () => {
+  console.log('monitorTeslaInventory'); // eslint-disable-line no-console
+
   const query = {
     query: {
       model: 'my', // my, mx
@@ -43,9 +47,16 @@ const monitorTeslaInventory = async () => {
   try {
     const url = `https://www.tesla.com/inventory/api/v1/inventory-results?query=${JSON.stringify(query)}`;
     const { data: { results } } = await axios.get(url);
-    const latestResults = Array.from(results).filter((r) => !vins.include(r.VIN));
 
-    if (!latestResults.length) return;
+    const latestResults = Array
+      .from(results)
+      .filter((r) => !vins.includes(r.VIN));
+
+
+    if (!latestResults.length) {
+      console.log('no new results'); // eslint-disable-line no-console
+      return;
+    }
 
     vins.push(...latestResults.map((r) => r.VIN));
 
@@ -57,7 +68,7 @@ const monitorTeslaInventory = async () => {
             .map((result) => (`
               <li>
                 <a href='https://www.tesla.com/${result.Model}/order/${result.VIN}?token=${result.token}'>
-                  ${result.Model} ${result.TrimName} (${result.Year})
+                  ${modelMap[result.Model]} ${result.TrimName} (${result.Year})
                 </a>
               </li>
             `))
@@ -68,9 +79,9 @@ const monitorTeslaInventory = async () => {
     /* eslint-enable indent */
 
     const msg = {
-      to: process.env.SENDGRID_TO_EMAIL,
+      to: getSendgridEmails(process.env.SENDGRID_MONITOR_TO_EMAILS),
       from: process.env.SENDGRID_FROM_EMAIL,
-      subject: 'New Tesla',
+      subject: 'Peanut\'s New Tesla Inventory',
       html,
     };
 
@@ -89,7 +100,7 @@ const monitorTeslaInventory = async () => {
 /* eslint-disable max-len */
 const sendAppHealthEmail = async () => {
   const msg = {
-    to: process.env.SENDGRID_TO_EMAIL,
+    to: getSendgridEmails(process.env.SENDGRID_APP_HEALTH_TO_EMAILS),
     from: process.env.SENDGRID_FROM_EMAIL,
     subject: 'tesla-inventory-monitor is running',
     text: 'EOM',
