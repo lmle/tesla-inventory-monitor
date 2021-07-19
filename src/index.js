@@ -4,6 +4,7 @@ const axios = require('axios');
 const modelMap = require('./constants/modelMap');
 const getCurrentISO = require('./utils/getCurrentISO');
 const getSendgridEmails = require('./utils/getSendgridEmails');
+const getRandomInt = require('./utils/getRandomInt');
 
 const app = express();
 const vins = [];
@@ -132,5 +133,17 @@ const sendAppHealthEmail = async () => {
 /* eslint-enable max-len */
 
 monitorTeslaInventory();
-setInterval(monitorTeslaInventory, process.env.MONITOR_EMAIL_INTERVAL_MILLISECONDS);
+
+(function loop() {
+  const randomMs = getRandomInt(
+    process.env.MONITOR_EMAIL_INTERVAL_MIN_MILLISECONDS,
+    process.env.MONITOR_EMAIL_INTERVAL_MAX_MILLISECONDS,
+  );
+
+  setTimeout(() => {
+    monitorTeslaInventory();
+    loop();
+  }, randomMs);
+}());
+
 setInterval(sendAppHealthEmail, process.env.APP_HEALTH_EMAIL_INTERVAL_MILLISECONDS);
