@@ -91,8 +91,23 @@ const monitorTeslaInventory = async () => {
       console.error(`${getCurrentISO()} - monitor - email error`); // eslint-disable-line no-console
       console.error(error); // eslint-disable-line no-console
     }
-  } catch (error) {
-    console.log('monitor - error', error); // eslint-disable-line no-console
+  } catch (monitorError) {
+    console.log('monitor - error', monitorError); // eslint-disable-line no-console
+
+    const msg = {
+      to: getSendgridEmails(process.env.SENDGRID_APP_HEALTH_TO_EMAILS),
+      from: process.env.SENDGRID_FROM_EMAIL,
+      subject: 'Error - Tesla New Inventory',
+      html: monitorError,
+    };
+
+    try {
+      await sgMail.send(msg);
+      console.info(`${getCurrentISO()} - monitor - error - email sent`); // eslint-disable-line no-console
+    } catch (sendgridError) {
+      console.error(`${getCurrentISO()} - monitor - error - email error`); // eslint-disable-line no-console
+      console.error(sendgridError); // eslint-disable-line no-console
+    }
   }
 };
 
