@@ -70,6 +70,24 @@ const monitorTeslaInventory = async () => {
                 <a href='https://www.tesla.com/${result.Model}/order/${result.VIN}?token=${result.token}'>
                   ${modelMap[result.Model]} ${result.TrimName} (${result.Year})
                 </a>
+                <ul>
+                  ${
+                    [
+                      'PAINT',
+                      'INTERIOR',
+                      'WHEELS',
+                    ].map((key) => {
+                      let value = result[key];
+
+                      if (Array.isArray(result[key])) {
+                        value = value.join(', ');
+                      }
+
+                      return `<li>${key}: ${value}</li>`;
+                    })
+                    .join('')
+                  }
+                </ul>
               </li>
             `))
             .join('')
