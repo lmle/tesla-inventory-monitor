@@ -49,22 +49,22 @@ const monitorTeslaInventory = async () => {
     const url = `https://www.tesla.com/inventory/api/v1/inventory-results?query=${JSON.stringify(query)}`;
     const { data: { results } } = await axios.get(url);
 
-    const latestResults = Array
+    const newResults = Array
       .from(results)
       .filter((r) => !vins.includes(r.VIN));
 
-    if (!latestResults.length) {
+    if (!newResults.length) {
       console.log('no new results'); // eslint-disable-line no-console
       return;
     }
 
-    vins.push(...latestResults.map((r) => r.VIN));
+    vins.push(...newResults.map((r) => r.VIN));
 
     /* eslint-disable indent */
     const html = `
       <ol>
         ${
-          latestResults
+          newResults
             .map((result) => (`
               <li>
                 <a href='https://www.tesla.com/${result.Model}/order/${result.VIN}?token=${result.token}'>
@@ -73,6 +73,7 @@ const monitorTeslaInventory = async () => {
                 <ul>
                   ${
                     [
+                      'VIN',
                       'PAINT',
                       'INTERIOR',
                       'WHEELS',
