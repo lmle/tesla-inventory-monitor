@@ -8,6 +8,7 @@ const getRandomInt = require('./utils/getRandomInt');
 
 const app = express();
 const vins = [];
+let hasError = false;
 
 app.get('/', (req, res) => {
   res.send('tesla-inventory-monitor is running');
@@ -114,11 +115,13 @@ const monitorTeslaInventory = async () => {
   } catch (monitorError) {
     console.log('monitor - error', monitorError); // eslint-disable-line no-console
 
+    hasError = true;
+
     const msg = {
       to: getSendgridEmails(process.env.SENDGRID_APP_HEALTH_TO_EMAILS),
       from: process.env.SENDGRID_FROM_EMAIL,
       subject: 'Error - Tesla New Inventory',
-      html: monitorError,
+      html: 'EOM',
     };
 
     try {
@@ -154,6 +157,8 @@ const sendAppHealthEmail = async () => {
 monitorTeslaInventory();
 
 (function loop() {
+  if (hasError) return;
+
   const randomMs = getRandomInt(
     process.env.MONITOR_EMAIL_INTERVAL_MIN_MILLISECONDS,
     process.env.MONITOR_EMAIL_INTERVAL_MAX_MILLISECONDS,
