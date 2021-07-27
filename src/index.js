@@ -91,10 +91,10 @@ const monitorTeslaInventory = async () => {
     retryCount += 1;
 
     sendEmail({
-      prependedConsoleInfo: `monitorTeslaInventory error - retry count ${retryCount}`,
+      prependedConsoleInfo: 'monitorTeslaInventory error',
       to: getSendgridEmails(process.env.SENDGRID_APP_HEALTH_TO_EMAILS),
       from: process.env.SENDGRID_FROM_EMAIL,
-      subject: 'Error - Tesla New Inventory',
+      subject: `Error - Tesla New Inventory - retry count ${retryCount}`,
     });
   }
 };
